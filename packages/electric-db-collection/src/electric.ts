@@ -335,11 +335,11 @@ export function electricCollectionOptions<T extends Row<unknown>>(
   schema?: never // no schema in the result
 }
 
-export function electricCollectionOptions(
+export function electricCollectionOptions<T extends Row<unknown>>(
   config: ElectricCollectionConfig<any, any>
 ): Omit<CollectionConfig<any, string | number>, `utils`> & {
   id?: string
-  utils: ElectricCollectionUtils
+  utils: ElectricCollectionUtils<T>
   schema?: any
 } {
   const seenTxids = new Store<Set<Txid>>(new Set([]))
@@ -584,7 +584,13 @@ export function electricCollectionOptions(
 
   // Create wrapper handlers for direct persistence operations that handle different matching strategies
   const wrappedOnInsert = config.onInsert
-    ? async (params: InsertMutationFnParams<any>) => {
+    ? async (
+        params: InsertMutationFnParams<
+          any,
+          string | number,
+          ElectricCollectionUtils<InferSchemaOutput<T>>
+        >
+      ) => {
         const handlerResult = await config.onInsert!(params)
         await processMatchingStrategy(handlerResult)
         return handlerResult
@@ -592,7 +598,13 @@ export function electricCollectionOptions(
     : undefined
 
   const wrappedOnUpdate = config.onUpdate
-    ? async (params: UpdateMutationFnParams<any>) => {
+    ? async (
+        params: UpdateMutationFnParams<
+          any,
+          string | number,
+          ElectricCollectionUtils<InferSchemaOutput<T>>
+        >
+      ) => {
         const handlerResult = await config.onUpdate!(params)
         await processMatchingStrategy(handlerResult)
         return handlerResult
@@ -600,7 +612,13 @@ export function electricCollectionOptions(
     : undefined
 
   const wrappedOnDelete = config.onDelete
-    ? async (params: DeleteMutationFnParams<any>) => {
+    ? async (
+        params: DeleteMutationFnParams<
+          any,
+          string | number,
+          ElectricCollectionUtils<InferSchemaOutput<T>>
+        >
+      ) => {
         const handlerResult = await config.onDelete!(params)
         await processMatchingStrategy(handlerResult)
         return handlerResult
